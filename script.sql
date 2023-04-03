@@ -52,6 +52,39 @@ WHERE
  order by 
  	e.fname,
     e.start_date,
-    YEAR(a.open_date)
+    YEAR(a.open_date);
 
 /*QUESTÃO 4*/
+
+SELECT DISTINCT
+	CASE c.cust_type_cd
+    	when "B" THEN b.name
+        ELSE CONCAT(i.fname, " ", i.lname)
+    END "Cliente",
+    a.account_id,
+    br.name
+FROM
+	(SELECT
+     max(a.avail_balance) "max"
+    FROM
+     	branch br,
+    	account a
+     WHERE
+     	br.branch_id = a.open_branch_id
+     GROUP BY 
+ 		br.branch_id) i2,
+	individual i,
+    business b,
+    customer c,
+    branch br,
+    account a
+WHERE
+	a.open_branch_id = br.branch_id
+    AND
+    (c.cust_id = i.cust_id
+    OR
+    b.cust_id = c.cust_id)
+    AND
+    a.cust_id = c.cust_id
+    AND
+    i2.max = a.avail_balance;
