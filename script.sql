@@ -88,3 +88,31 @@ WHERE
     a.cust_id = c.cust_id
     AND
     i2.max = a.avail_balance;
+ 
+ /*QUESTÃO 5*/
+ 
+ CREATE VIEW identificadores as 
+ SELECT DISTINCT
+	CASE c.cust_type_cd
+    	when "B" THEN b.name
+        ELSE CONCAT(i.fname, " ", i.lname)
+    END "Cliente",
+    a.account_id "Conta",
+    br.branch_id "Agência"
+    
+FROM
+	individual i,
+    business b,
+    customer c,
+    branch br,
+    account a
+WHERE
+	a.open_branch_id = br.branch_id
+    AND
+    (c.cust_id = i.cust_id
+    OR
+    b.cust_id = c.cust_id)
+    AND
+    a.cust_id = c.cust_id;
+    
+ SELECT * from identificadores;
