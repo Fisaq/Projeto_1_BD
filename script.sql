@@ -91,28 +91,76 @@ WHERE
  
  /*QUESTÃO 5*/
  
- CREATE VIEW identificadores as 
- SELECT DISTINCT
-	CASE c.cust_type_cd
-    	when "B" THEN b.name
-        ELSE CONCAT(i.fname, " ", i.lname)
-    END "Cliente",
-    a.account_id "Conta",
-    br.branch_id "Agência"
-    
+    CREATE VIEW Identificadores AS
+SELECT
+    CONCAT(i.fname, " ", i.lname) "Cliente",
+    i.cust_id "IdCliente",
+    a.account_id "IdConta",
+    br.branch_id "IdAgencia",
+    a.avail_balance "Saldo",
+    c.city "Cidade"
 FROM
-	individual i,
-    business b,
-    customer c,
+    individual i,
+    account a,
     branch br,
-    account a
+    customer c
 WHERE
-	a.open_branch_id = br.branch_id
+    br.branch_id = a.open_branch_id
     AND
-    (c.cust_id = i.cust_id
-    OR
-    b.cust_id = c.cust_id)
+    a.cust_id = c.cust_id
     AND
-    a.cust_id = c.cust_id;
+    c.cust_id = i.cust_id
+union
+SELECT
+    b.name,
+    b.cust_id,
+    a.account_id,
+    br.branch_id,
+    a.avail_balance,
+    c.city
+FROM
+    business b,
+    account a,
+    branch br,
+    customer c
+WHERE
+    br.branch_id = a.open_branch_id
+    AND
+    a.cust_id = c.cust_id
+    AND
+    c.cust_id = b.cust_id;
     
- SELECT * from identificadores;
+ /*Visualização da 2*/
+SELECT DISTINCT
+    Cliente
+FROM
+    Identificadores id,
+    branch br
+WHERE
+	id.IdAgencia = br.branch_id
+    AND
+    id.Cidade != br.city;
+    
+ /*Visulaização da 4*/
+SELECT
+    IdConta,
+    Cliente,
+    br.name "Nome"
+FROM
+    Identificadores id,
+    branch br,
+	(SELECT
+     	    IdAgencia,	
+     	    MAX(Saldo) "max"
+        FROM
+     	    Identificadores
+        GROUP BY
+     	    IdAgencia) cl2
+WHERE
+    id.Saldo = cl2.max
+    AND
+    id.IdAgencia = cl2.IdAgencia
+    AND
+    id.IdAgencia = br.branch_id
+ORDER BY
+    id.IdAgencia;
